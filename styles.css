@@ -1,0 +1,96 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1a1a1a;
+    color: #ccc;
+    padding: 20px;
+    max-width: 1000px;
+    margin: auto;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #4CAF50;
+}
+
+.content {
+    margin-bottom: 40px;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+ul {
+    list-style-type: none;
+}
+
+.chart-container {
+    width: 100%;
+    margin-bottom: 30px;
+    background-color: #333; /* Sfondo della chart */
+    padding: 10px; /* Spazio intorno alla chart */
+    border-radius: 5px; /* Bordo arrotondato */
+}
+
+form {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    color: #4CAF50;
+}
+
+label {
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+input[type="number"] {
+    margin-right: 10px;
+    padding: 5px;
+    width: 60px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+}
+
+button {
+    padding: 5px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 3px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Aggiunta di stile per i risultati statistici */
+#mean, #variance {
+    font-weight: bold;
+    color: #fff; /* Colore del testo */
+}
+
+h2 {
+    margin-top: 40px;
+}
+
+/* Stile per la sezione dei risultati */
+.results-section {
+    background-color: #333;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.results-section p {
+    margin: 10px 0;
+    font-size: 1.1rem;
+    color: #4CAF50; /* Colore delle etichette dei risultati */
+}
+
+.results-section span {
+    color: #fff; /* Colore dei valori dei risultati */
+}
