@@ -7,23 +7,9 @@ body {
     margin: auto;
 }
 
-h1, h2 {
+h1 {
     text-align: center;
     color: #4CAF50;
-}
-
-h3 {
-    color: #4CAF50;
-}
-
-.content {
-    margin-bottom: 40px;
-    line-height: 1.6;
-    font-size: 1rem;
-}
-
-ul {
-    list-style-type: none;
 }
 
 .chart-container {
@@ -35,14 +21,8 @@ form {
     margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 20px;
     width: 100%;
     color: #4CAF50;
-}
-
-.form-group {
-    flex-basis: calc(33.333% - 10px);
 }
 
 label {
@@ -60,8 +40,14 @@ input[type="number"] {
     border-radius: 3px;
 }
 
+.button-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
 button {
-    padding: 5px 15px;
+    padding: 10px 20px;
     background-color: #4CAF50;
     color: white;
     border: none;
@@ -75,13 +61,12 @@ button:hover {
 }
 
 #statistics {
-    margin-top: 20px;
-    color: #4CAF50;
-    font-size: 1.2rem;
     text-align: center;
+    font-size: 1.2rem;
+    color: #4CAF50;
 }
 
-.results-section span {
-    color: #fff;
+#mean, #variance {
+    margin: 10px 0;
 }
 
