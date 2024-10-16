@@ -21,12 +21,12 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
         return acc;
     }, {});
 
-    // Calculate mean and variance
+    // Calcolo della media e varianza
     const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
     const variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
 
     if (isRelative) {
-        // Calculate relative frequency
+        // Calcolo della frequenza relativa
         const total = numAttackers;
         for (let key in penetrationDistribution) {
             penetrationDistribution[key] = (penetrationDistribution[key] / total).toFixed(4);
@@ -71,16 +71,20 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
         });
     }
 
-    drawAttackerDistribution(penetrationDistribution, numServers, mean, variance);
+    drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative);
 }
 
-function drawAttackerDistribution(penetrationDistribution, numServers, mean, variance) {
+function drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative) {
     const labels = Array.from({ length: numServers + 1 }, (_, i) => `${i}`);
     const distData = labels.map(label => penetrationDistribution[label] || 0);
+
+    // Modifica della scala dell'asse y per la frequenza relativa
+    const maxYValue = isRelative ? 1 : Math.max(...distData);
 
     if (attackerDistGraph) {
         attackerDistGraph.data.labels = labels;
         attackerDistGraph.data.datasets[0].data = distData;
+        attackerDistGraph.options.scales.y.max = maxYValue; // Imposta la scala in base alla frequenza
         attackerDistGraph.update();
     } else {
         attackerDistGraph = new Chart(attackerDistCtx, {
@@ -96,7 +100,7 @@ function drawAttackerDistribution(penetrationDistribution, numServers, mean, var
             },
             options: {
                 scales: {
-                    y: { grid: { display: false }, ticks: { color: '#999' } },
+                    y: { min: 0, max: maxYValue, grid: { display: false }, ticks: { color: '#999' } },
                     x: { grid: { display: false }, ticks: { color: '#999' } }
                 },
                 plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }
@@ -104,11 +108,12 @@ function drawAttackerDistribution(penetrationDistribution, numServers, mean, var
         });
     }
 
-    // Display mean and variance
+    // Visualizzazione della media e della varianza
     document.getElementById('mean').textContent = `Mean: ${mean.toFixed(4)}`;
     document.getElementById('variance').textContent = `Variance: ${variance.toFixed(4)}`;
 }
 
+// Event listener per il bottone di frequenza assoluta
 document.getElementById('absoluteFreqBtn').addEventListener('click', function() {
     const numServers = parseInt(document.getElementById('serverCount').value);
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
@@ -116,6 +121,7 @@ document.getElementById('absoluteFreqBtn').addEventListener('click', function() 
     drawPenetrationGraph(numServers, numAttackers, successProb, false);
 });
 
+// Event listener per il bottone di frequenza relativa
 document.getElementById('relativeFreqBtn').addEventListener('click', function() {
     const numServers = parseInt(document.getElementById('serverCount').value);
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
@@ -123,7 +129,7 @@ document.getElementById('relativeFreqBtn').addEventListener('click', function() 
     drawPenetrationGraph(numServers, numAttackers, successProb, true);
 });
 
-// Initial call
+// Chiamata iniziale con frequenza assoluta
 drawPenetrationGraph(10, 5, 0.5);
 
 
