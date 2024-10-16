@@ -10,30 +10,37 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
     for (let attacker = 0; attacker < numAttackers; attacker++) {
         let penetrations = 0;
         for (let server = 1; server <= numServers; server++) {
-            // Simulate jumps of -1 or +1 with probability p (random walk)
+            // Simula salti di -1 o +1 con probabilità p (random walk)
             penetrations += Math.random() < successProb ? 1 : -1;
             attackResults[attacker].push(penetrations);
 
             if (server === numServers - 1) {
-                savedScores.push(penetrations);
+                savedScores.push(penetrations); // Salva il valore finale di penetrazione
             }
         }
         finalPenetrations[attacker] = penetrations;
     }
 
+    // Distribuzione delle penetrazioni finali
     const penetrationDistribution = finalPenetrations.reduce((acc, numPenetrations) => {
         acc[numPenetrations] = (acc[numPenetrations] || 0) + 1;
         return acc;
     }, {});
 
+    // Calcolo della media e della varianza per frequenze assolute
     const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
-    const variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
+    let variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
 
     if (isRelative) {
+        // Se è relativa, normalizza le frequenze e ricalcola media e varianza
         const total = numAttackers;
         for (let key in penetrationDistribution) {
             penetrationDistribution[key] = (penetrationDistribution[key] / total).toFixed(4);
         }
+
+        // Normalizza la media e ricalcola la varianza per frequenze relative
+        const relativeMean = mean / numAttackers;
+        variance = finalPenetrations.reduce((sum, x) => sum + Math.pow((x / numAttackers) - relativeMean, 2), 0) / numAttackers;
     }
 
     return { attackResults, penetrationDistribution, mean, variance, savedScores };
@@ -81,6 +88,7 @@ function drawAttackerDistribution(penetrationDistribution, numServers, mean, var
     const labels = Array.from({ length: numServers + 1 }, (_, i) => `${i}`);
     const distData = labels.map(label => penetrationDistribution[label] || 0);
 
+    // Modifica della scala dell'asse y per la frequenza relativa o assoluta
     const maxYValue = isRelative ? 1 : Math.max(...distData);
 
     if (attackerDistGraph) {
@@ -110,6 +118,7 @@ function drawAttackerDistribution(penetrationDistribution, numServers, mean, var
         });
     }
 
+    // Visualizzazione della media e della varianza
     document.getElementById('mean').textContent = `Mean: ${mean.toFixed(4)}`;
     document.getElementById('variance').textContent = `Variance: ${variance.toFixed(4)}`;
 }
@@ -119,7 +128,7 @@ document.getElementById('absoluteFreqBtn').addEventListener('click', function() 
     const numServers = parseInt(document.getElementById('serverCount').value);
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
     const successProb = parseFloat(document.getElementById('penetrationProb').value);
-    drawPenetrationGraph(numServers, numAttackers, successProb, false);
+    drawPenetrationGraph(numServers, numAttackers, successProb, false); // Chiamata con frequenza assoluta
 });
 
 // Event listener per il bottone di frequenza relativa
@@ -127,11 +136,10 @@ document.getElementById('relativeFreqBtn').addEventListener('click', function() 
     const numServers = parseInt(document.getElementById('serverCount').value);
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
     const successProb = parseFloat(document.getElementById('penetrationProb').value);
-    drawPenetrationGraph(numServers, numAttackers, successProb, true);
+    drawPenetrationGraph(numServers, numAttackers, successProb, true); // Chiamata con frequenza relativa
 });
 
 // Chiamata iniziale con frequenza assoluta
 drawPenetrationGraph(100, 50, 0.5);
-
 
 
