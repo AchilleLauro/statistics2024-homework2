@@ -12,12 +12,37 @@ h1, h2 {
     color: #4CAF50;
 }
 
+h3 {
+    color: #4CAF50;
+}
+
+.content {
+    margin-bottom: 40px;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+ul {
+    list-style-type: none;
+}
+
+.chart-container {
+    width: 100%;
+    margin-bottom: 30px;
+}
+
 form {
     margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
     width: 100%;
     color: #4CAF50;
+}
+
+.form-group {
+    flex-basis: calc(33.333% - 10px);
 }
 
 label {
@@ -49,25 +74,11 @@ button:hover {
     background-color: #45a049;
 }
 
-.chart-container {
-    width: 100%;
-    margin-bottom: 30px;
-    background-color: #333;
-    padding: 10px;
-    border-radius: 5px;
-}
-
-.results-section {
-    background-color: #333;
-    padding: 15px;
-    border-radius: 5px;
-    text-align: center;
-}
-
-.results-section p {
-    margin: 10px 0;
-    font-size: 1.1rem;
+#statistics {
+    margin-top: 20px;
     color: #4CAF50;
+    font-size: 1.2rem;
+    text-align: center;
 }
 
 .results-section span {
