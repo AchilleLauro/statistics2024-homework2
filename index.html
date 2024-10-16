@@ -3,28 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Penetration Simulation</title>
+    <title>Statistics and Penetration Simulation</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <h1>Basic Notions in Statistics</h1>
+
+    <div class="content">
+        <h3>Population</h3>
+        <p>In statistics, the term population refers to the entire set of individuals, items, or events that are being studied. It represents the complete group from which a sample can be drawn for research purposes.</p>
+        <p><strong>Example:</strong> If the research focuses on the heights of adult men in a country, the population would include every adult man in that country.</p>
+
+        <h3>Statistical Unit</h3>
+        <p>These are the individual elements or members of a population that are the subject of observation or measurement.</p>
+        <p><strong>Example:</strong> If the research focuses on the heights of adult men in a country, each adult man would be a statistical unit.</p>
+
+        <h3>Distribution</h3>
+        <p>A distribution is a function that shows the possible values for a variable and how often they occur. Distributions can be represented in various ways, including tables, graphs, or equations. The shape of a distribution (normal, skewed...) tells a lot about the data, including central tendencies and variability.</p>
+
+        <h3>Frequency</h3>
+        <ul>
+            <li><strong>Absolute frequency:</strong> Refers to the number of times a particular value or category occurs in a data set.</li>
+            <li><strong>Relative frequency:</strong> Is the proportion of times a value occurs relative to the total number of observations.</li>
+            <li><strong>Percentage frequency:</strong> Expresses the relative frequency as a percentage.</li>
+        </ul>
+
+        <h3>Notion of Arithmetic Average</h3>
+        <p>The arithmetic average, commonly known as the mean, is a measure of central tendency used in statistics to summarize a set of numerical values. It is calculated by taking the sum of all the values in a dataset and dividing it by the number of values.</p>
+
+        <h3>Median</h3>
+        <p>The median is the middle value in a dataset when the data is arranged in ascending or descending order. If the dataset has an odd number of values, the median is the middle value; if it has an even number, it is the average of the two middle values. The median is less sensitive to outliers than the arithmetic mean and is often used when the data is skewed.</p>
+
+        <h3>Mode</h3>
+        <p>The mode is the value that appears most frequently in a dataset. A dataset may have more than one mode (multimodal) if multiple values occur with the same highest frequency, or it may have no mode if all values are unique.</p>
+
+        <section>
+            <h2>Computational Problems with Floating Point Representation</h2>
+    
+            <p>While the formula for the arithmetic mean is straightforward, implementing it on a computer can lead to floating-point errors. Floating-point arithmetic is used in computers to represent real numbers with a limited number of significant digits. This limitation leads to several computational issues:</p>
+    
+            <h3>Rounding Errors</h3>
+            <p>Computers can only store numbers with a finite precision, so when a number is represented in floating-point, its value is often rounded to the nearest representable value. This can lead to small errors that accumulate over many operations, especially when adding or subtracting large numbers with small numbers.</p>
+    
+            <h3>Loss of Precision</h3>
+            <p>When calculating the mean, the sum of a large set of numbers can involve very large intermediate results. If some of the numbers are small relative to others, adding them together may result in the smaller numbers being "swallowed" by the larger ones, leading to a loss of precision.</p>
+    
+            <h3>Catastrophic Cancellation</h3>
+            <p>This is a specific problem that occurs when subtracting two nearly equal floating-point numbers. Because of rounding errors, the difference between them may lose significant digits of precision. In the context of calculating the mean, this can happen when trying to subtract the mean from individual values to compute other statistics, like variance. Small differences between numbers that should be accurate may be overwhelmed by the imprecision of floating-point arithmetic.</p>
+        </section>
+
+        <h3>Numerical Solution (Knuth's Approach)</h3>
+        <p>Knuth proposed various techniques and algorithms to minimize floating-point errors. One of the solutions he suggested is Kahan summation, also known as compensated summation, which improves the accuracy of summing floating-point numbers by keeping track of a small correction factor for lost low-order bits.</p>
+    </div>
+
     <h1>Penetration Simulation</h1>
 
     <form id="configForm">
-        <div>
+        <div class="form-group">
             <label for="serverCount">Servers (n):</label>
             <input type="number" id="serverCount" value="10" min="1" required>
         </div>
-        <div>
+        <div class="form-group">
             <label for="hackerCount">Attackers (m):</label>
             <input type="number" id="hackerCount" value="5" min="1" required>
         </div>
-        <div>
+        <div class="form-group">
             <label for="penetrationProb">Probability (p):</label>
             <input type="number" id="penetrationProb" value="0.5" step="0.1" min="0" max="1" required>
         </div>
-        <button type="button" id="submitButton">Run Absolute Frequency</button>
-        <button type="button" id="submitButton2">Run Relative Frequency</button>
+        <button type="submit">Run Simulation</button>
     </form>
 
     <div class="chart-container">
@@ -34,10 +82,9 @@
         <canvas id="attackerDistributionChart"></canvas>
     </div>
 
-    <div class="results-section">
-        <h2>Statistical Results</h2>
-        <p>Mean at step: <span id="mean">N/A</span></p>
-        <p>Variance at step: <span id="variance">N/A</span></p>
+    <div id="statistics">
+        <p><strong>Mean: </strong><span id="meanValue">N/A</span></p>
+        <p><strong>Variance: </strong><span id="varianceValue">N/A</span></p>
     </div>
 
     <script src="script.js"></script>
