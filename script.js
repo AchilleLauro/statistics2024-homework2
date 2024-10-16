@@ -2,37 +2,43 @@ const serverPenCtx = document.getElementById('serverPenetrationChart').getContex
 const attackerDistCtx = document.getElementById('attackerDistributionChart').getContext('2d');
 let serverPenetrationGraph, attackerDistGraph;
 
-// Funzione per creare i dati delle penetrazioni, con salti -1/+1 (random walk)
-function createPenetrationData(numServers, numAttackers, successProb) {
+function createPenetrationData(numServers, numAttackers, successProb, isRelative = false) {
     const attackResults = Array.from({ length: numAttackers }, () => [0]);
     const finalPenetrations = Array(numAttackers).fill(0);
 
-    // Simulazione del random walk per gli attaccanti
     for (let attacker = 0; attacker < numAttackers; attacker++) {
         let penetrations = 0;
         for (let server = 1; server <= numServers; server++) {
-            let jump = Math.random() < successProb ? 1 : -1;  // Salti -1/+1
-            penetrations += jump;  // Aggiorna la penetrazione con il salto
-            attackResults[attacker].push(penetrations);  // Salva i risultati
+            // Simulate jumps of -1 or +1 with probability p (random walk)
+            penetrations += Math.random() < successProb ? 1 : -1;
+            attackResults[attacker].push(penetrations);
         }
-        finalPenetrations[attacker] = penetrations;  // Salva il risultato finale
+        finalPenetrations[attacker] = penetrations;
     }
 
-    // Calcola la distribuzione delle penetrazioni finali
     const penetrationDistribution = finalPenetrations.reduce((acc, numPenetrations) => {
         acc[numPenetrations] = (acc[numPenetrations] || 0) + 1;
         return acc;
     }, {});
 
-    return { attackResults, penetrationDistribution };
+    // Calculate mean and variance
+    const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
+    const variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
+
+    if (isRelative) {
+        // Calculate relative frequency
+        const total = numAttackers;
+        for (let key in penetrationDistribution) {
+            penetrationDistribution[key] = (penetrationDistribution[key] / total).toFixed(4);
+        }
+    }
+
+    return { attackResults, penetrationDistribution, mean, variance };
 }
 
-// Funzione per disegnare il grafico delle penetrazioni con traiettorie assolute e relative
-function drawPenetrationGraph(numServers, numAttackers, successProb) {
-    const { attackResults, penetrationDistribution } = createPenetrationData(numServers, numAttackers, successProb);
+function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative = false) {
+    const { attackResults, penetrationDistribution, mean, variance } = createPenetrationData(numServers, numAttackers, successProb, isRelative);
     const labels = Array.from({ length: numServers }, (_, i) => `${i + 1}`);
-    
-    // Dataset per ogni attaccante
     const attackerDatasets = attackResults.map((attackerData, idx) => ({
         label: `Attacker ${idx + 1}`,
         data: attackerData,
@@ -42,10 +48,10 @@ function drawPenetrationGraph(numServers, numAttackers, successProb) {
         borderWidth: 2
     }));
 
-    // Aggiorna o crea il grafico delle penetrazioni
     if (serverPenetrationGraph) {
         serverPenetrationGraph.data.labels = ['Start', ...labels];
         serverPenetrationGraph.data.datasets = attackerDatasets;
+        serverPenetrationGraph.options.scales.y.min = -numServers;
         serverPenetrationGraph.options.scales.y.max = numServers;
         serverPenetrationGraph.update();
     } else {
@@ -57,7 +63,7 @@ function drawPenetrationGraph(numServers, numAttackers, successProb) {
             },
             options: {
                 scales: {
-                    y: { min: 0, max: numServers, grid: { display: false }, ticks: { color: '#999' } },
+                    y: { min: -numServers, max: numServers, grid: { display: false }, ticks: { color: '#999' } },
                     x: { grid: { display: false }, ticks: { color: '#999' } }
                 },
                 plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }
@@ -65,11 +71,10 @@ function drawPenetrationGraph(numServers, numAttackers, successProb) {
         });
     }
 
-    drawAttackerDistribution(penetrationDistribution, numServers);
+    drawAttackerDistribution(penetrationDistribution, numServers, mean, variance);
 }
 
-// Funzione per disegnare la distribuzione assoluta delle penetrazioni degli attaccanti
-function drawAttackerDistribution(penetrationDistribution, numServers) {
+function drawAttackerDistribution(penetrationDistribution, numServers, mean, variance) {
     const labels = Array.from({ length: numServers + 1 }, (_, i) => `${i}`);
     const distData = labels.map(label => penetrationDistribution[label] || 0);
 
@@ -98,34 +103,27 @@ function drawAttackerDistribution(penetrationDistribution, numServers) {
             }
         });
     }
+
+    // Display mean and variance
+    document.getElementById('mean').textContent = `Mean: ${mean.toFixed(4)}`;
+    document.getElementById('variance').textContent = `Variance: ${variance.toFixed(4)}`;
 }
 
-// Funzione per calcolare la media e la varianza
-function calculateMeanAndVariance(data) {
-    const mean = data.reduce((sum, value) => sum + value, 0) / data.length;
-    const variance = data.reduce((sum, value) => sum + (value - mean) ** 2, 0) / data.length;
-    return { mean, variance };
-}
-
-// Seleziona uno step intermedio dal GUI e calcola la media e la varianza
-function displayStatsAtStep(attackResults, step) {
-    const stepData = attackResults.map(trajectory => trajectory[step]);
-    const { mean, variance } = calculateMeanAndVariance(stepData);
-    
-    document.getElementById('meanValue').innerText = mean.toFixed(2);
-    document.getElementById('varianceValue').innerText = variance.toFixed(2);
-}
-
-// Event listener per la sottomissione del form
-document.getElementById('configForm').addEventListener('submit', function(event) {
-    event.preventDefault();
+document.getElementById('absoluteFreqBtn').addEventListener('click', function() {
     const numServers = parseInt(document.getElementById('serverCount').value);
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
     const successProb = parseFloat(document.getElementById('penetrationProb').value);
-    drawPenetrationGraph(numServers, numAttackers, successProb);
-    displayStatsAtStep(attackResults, numServers / 2);  // Statistiche a uno step intermedio (es. metà)
+    drawPenetrationGraph(numServers, numAttackers, successProb, false);
 });
 
-// Disegna inizialmente il grafico con valori di esempio
+document.getElementById('relativeFreqBtn').addEventListener('click', function() {
+    const numServers = parseInt(document.getElementById('serverCount').value);
+    const numAttackers = parseInt(document.getElementById('hackerCount').value);
+    const successProb = parseFloat(document.getElementById('penetrationProb').value);
+    drawPenetrationGraph(numServers, numAttackers, successProb, true);
+});
+
+// Initial call
 drawPenetrationGraph(10, 5, 0.5);
+
 
