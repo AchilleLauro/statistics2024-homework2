@@ -12,24 +12,6 @@ h1, h2 {
     color: #4CAF50;
 }
 
-.content {
-    margin-bottom: 40px;
-    line-height: 1.6;
-    font-size: 1rem;
-}
-
-ul {
-    list-style-type: none;
-}
-
-.chart-container {
-    width: 100%;
-    margin-bottom: 30px;
-    background-color: #333; /* Sfondo della chart */
-    padding: 10px; /* Spazio intorno alla chart */
-    border-radius: 5px; /* Bordo arrotondato */
-}
-
 form {
     margin-bottom: 20px;
     display: flex;
@@ -67,17 +49,14 @@ button:hover {
     background-color: #45a049;
 }
 
-/* Aggiunta di stile per i risultati statistici */
-#mean, #variance {
-    font-weight: bold;
-    color: #fff; /* Colore del testo */
+.chart-container {
+    width: 100%;
+    margin-bottom: 30px;
+    background-color: #333;
+    padding: 10px;
+    border-radius: 5px;
 }
 
-h2 {
-    margin-top: 40px;
-}
-
-/* Stile per la sezione dei risultati */
 .results-section {
     background-color: #333;
     padding: 15px;
@@ -88,9 +67,10 @@ h2 {
 .results-section p {
     margin: 10px 0;
     font-size: 1.1rem;
-    color: #4CAF50; /* Colore delle etichette dei risultati */
+    color: #4CAF50;
 }
 
 .results-section span {
-    color: #fff; /* Colore dei valori dei risultati */
+    color: #fff;
 }
+
