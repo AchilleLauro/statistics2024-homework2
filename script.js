@@ -5,6 +5,7 @@ let serverPenetrationGraph, attackerDistGraph;
 function createPenetrationData(numServers, numAttackers, successProb, isRelative = false) {
     const attackResults = Array.from({ length: numAttackers }, () => [0]);
     const finalPenetrations = Array(numAttackers).fill(0);
+    const savedScores = [];
 
     for (let attacker = 0; attacker < numAttackers; attacker++) {
         let penetrations = 0;
@@ -12,6 +13,10 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
             // Simulate jumps of -1 or +1 with probability p (random walk)
             penetrations += Math.random() < successProb ? 1 : -1;
             attackResults[attacker].push(penetrations);
+
+            if (server === numServers - 1) {
+                savedScores.push(penetrations);
+            }
         }
         finalPenetrations[attacker] = penetrations;
     }
@@ -21,23 +26,21 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
         return acc;
     }, {});
 
-    // Calcolo della media e varianza
     const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
     const variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
 
     if (isRelative) {
-        // Calcolo della frequenza relativa
         const total = numAttackers;
         for (let key in penetrationDistribution) {
             penetrationDistribution[key] = (penetrationDistribution[key] / total).toFixed(4);
         }
     }
 
-    return { attackResults, penetrationDistribution, mean, variance };
+    return { attackResults, penetrationDistribution, mean, variance, savedScores };
 }
 
 function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative = false) {
-    const { attackResults, penetrationDistribution, mean, variance } = createPenetrationData(numServers, numAttackers, successProb, isRelative);
+    const { attackResults, penetrationDistribution, mean, variance, savedScores } = createPenetrationData(numServers, numAttackers, successProb, isRelative);
     const labels = Array.from({ length: numServers }, (_, i) => `${i + 1}`);
     const attackerDatasets = attackResults.map((attackerData, idx) => ({
         label: `Attacker ${idx + 1}`,
@@ -71,20 +74,19 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
         });
     }
 
-    drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative);
+    drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative, savedScores);
 }
 
-function drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative) {
+function drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative, savedScores) {
     const labels = Array.from({ length: numServers + 1 }, (_, i) => `${i}`);
     const distData = labels.map(label => penetrationDistribution[label] || 0);
 
-    // Modifica della scala dell'asse y per la frequenza relativa
     const maxYValue = isRelative ? 1 : Math.max(...distData);
 
     if (attackerDistGraph) {
         attackerDistGraph.data.labels = labels;
         attackerDistGraph.data.datasets[0].data = distData;
-        attackerDistGraph.options.scales.y.max = maxYValue; // Imposta la scala in base alla frequenza
+        attackerDistGraph.options.scales.y.max = maxYValue;
         attackerDistGraph.update();
     } else {
         attackerDistGraph = new Chart(attackerDistCtx, {
@@ -108,7 +110,6 @@ function drawAttackerDistribution(penetrationDistribution, numServers, mean, var
         });
     }
 
-    // Visualizzazione della media e della varianza
     document.getElementById('mean').textContent = `Mean: ${mean.toFixed(4)}`;
     document.getElementById('variance').textContent = `Variance: ${variance.toFixed(4)}`;
 }
@@ -130,6 +131,7 @@ document.getElementById('relativeFreqBtn').addEventListener('click', function() 
 });
 
 // Chiamata iniziale con frequenza assoluta
-drawPenetrationGraph(10, 5, 0.5);
+drawPenetrationGraph(100, 50, 0.5);
+
 
 
