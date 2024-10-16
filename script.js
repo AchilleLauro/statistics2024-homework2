@@ -2,6 +2,22 @@ const serverPenCtx = document.getElementById('serverPenetrationChart').getContex
 const attackerDistCtx = document.getElementById('attackerDistributionChart').getContext('2d');
 let serverPenetrationGraph, attackerDistGraph;
 
+document.getElementById('submitButton').addEventListener('click', function() {
+    const numAttackers = parseInt(document.getElementById('hackerCount').value);
+    const numServers = parseInt(document.getElementById('serverCount').value);
+    const probability = parseFloat(document.getElementById('penetrationProb').value);
+
+    drawChartAbsolute(numAttackers, numServers, probability);
+});
+
+document.getElementById('submitButton2').addEventListener('click', function() {
+    const numAttackers = parseInt(document.getElementById('hackerCount').value);
+    const numServers = parseInt(document.getElementById('serverCount').value);
+    const probability = parseFloat(document.getElementById('penetrationProb').value);
+
+    drawChartRelative(numAttackers, numServers, probability);
+});
+
 function createPenetrationData(numServers, numAttackers, successProb) {
     const attackResults = Array.from({ length: numAttackers }, () => [0]);
     const finalPenetrations = Array(numAttackers).fill(0);
@@ -9,7 +25,7 @@ function createPenetrationData(numServers, numAttackers, successProb) {
     for (let attacker = 0; attacker < numAttackers; attacker++) {
         let penetrations = 0;
         for (let server = 1; server <= numServers; server++) {
-            let jump = (Math.random() < successProb) ? 1 : -1;  // Jump -1 or +1 based on probability
+            let jump = (Math.random() < successProb) ? 1 : -1;
             penetrations += jump;
             attackResults[attacker].push(penetrations);
         }
@@ -24,108 +40,78 @@ function createPenetrationData(numServers, numAttackers, successProb) {
     return { attackResults, penetrationDistribution };
 }
 
-function recursiveAverage(arr, sum = 0, index = 0) {
-    if (index === arr.length) {
-        return sum / arr.length;
-    }
-    return recursiveAverage(arr, sum + arr[index], index + 1);
-}
-
-function recursiveVariance(arr, mean, sumSquaredDiff = 0, index = 0) {
-    if (index === arr.length) {
-        return sumSquaredDiff / arr.length;
-    }
-    const squaredDiff = (arr[index] - mean) ** 2;
-    return recursiveVariance(arr, mean, sumSquaredDiff + squaredDiff, index + 1);
-}
-
-function calculateStatistics(atStep, attackResults) {
-    const stepResults = attackResults.map(results => results[atStep] || 0);
-    const mean = recursiveAverage(stepResults);
-    const variance = recursiveVariance(stepResults, mean);
-    return { mean, variance };
-}
-
-function drawPenetrationGraph(numServers, numAttackers, successProb) {
-    const { attackResults, penetrationDistribution } = createPenetrationData(numServers, numAttackers, successProb);
-    const labels = Array.from({ length: numServers }, (_, i) => `${i + 1}`);
-    const attackerDatasets = attackResults.map((attackerData, idx) => ({
-        label: `Attacker ${idx + 1}`,
-        data: attackerData,
-        borderColor: `rgba(${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, 0.9)`,
-        fill: false,
-        stepped: true,
-        borderWidth: 2
-    }));
+function drawChartAbsolute(numAttackers, numServers, probability) {
+    const { attackResults, penetrationDistribution } = createPenetrationData(numServers, numAttackers, probability);
 
     if (serverPenetrationGraph) {
-        serverPenetrationGraph.data.labels = ['Start', ...labels];
-        serverPenetrationGraph.data.datasets = attackerDatasets;
-        serverPenetrationGraph.options.scales.y.max = numServers;
+        serverPenetrationGraph.data.datasets = attackResults.map((attackerData, idx) => ({
+            label: `Attacker ${idx + 1}`,
+            data: attackerData,
+            borderColor: `rgba(${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, 0.9)`,
+            fill: false,
+            borderWidth: 2,
+        }));
         serverPenetrationGraph.update();
     } else {
         serverPenetrationGraph = new Chart(serverPenCtx, {
             type: 'line',
             data: {
-                labels: ['Start', ...labels],
-                datasets: attackerDatasets
+                labels: Array.from({ length: numServers + 1 }, (_, i) => `${i}`),
+                datasets: attackResults.map((attackerData, idx) => ({
+                    label: `Attacker ${idx + 1}`,
+                    data: attackerData,
+                    borderColor: `rgba(${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, 0.9)`,
+                    fill: false,
+                    borderWidth: 2,
+                })),
             },
             options: {
                 scales: {
-                    y: { min: 0, max: numServers, grid: { display: false }, ticks: { color: '#999' } },
-                    x: { grid: { display: false }, ticks: { color: '#999' } }
+                    y: { min: -numServers, max: numServers },
+                    x: { grid: { display: false } },
                 },
-                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }
-            }
+            },
         });
     }
 
     drawAttackerDistribution(penetrationDistribution, numServers);
-
-    // Calcola e mostra la statistica per il passo temporale selezionato
-    const stepToAnalyze = Math.floor(numServers / 2);  // Step selezionato arbitrariamente per esempio
-    const stats = calculateStatistics(stepToAnalyze, attackResults);
-    document.getElementById('mean').textContent = stats.mean.toFixed(5);
-    document.getElementById('variance').textContent = stats.variance.toFixed(5);
 }
 
-function drawAttackerDistribution(penetrationDistribution, numServers) {
-    const labels = Array.from({ length: numServers + 1 }, (_, i) => `${i}`);
-    const distData = labels.map(label => penetrationDistribution[label] || 0);
+function drawChartRelative(numAttackers, numServers, probability) {
+    const { attackResults } = createPenetrationData(numServers, numAttackers, probability);
 
-    if (attackerDistGraph) {
-        attackerDistGraph.data.labels = labels;
-        attackerDistGraph.data.datasets[0].data = distData;
-        attackerDistGraph.update();
+    if (serverPenetrationGraph) {
+        serverPenetrationGraph.data.datasets = attackResults.map((attackerData, idx) => ({
+            label: `Attacker ${idx + 1}`,
+            data: attackerData.map((val, i) => val / (i + 1)),
+            borderColor: `rgba(${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, 0.9)`,
+            fill: false,
+            borderWidth: 2,
+        }));
+        serverPenetrationGraph.update();
     } else {
-        attackerDistGraph = new Chart(attackerDistCtx, {
-            type: 'bar',
+        serverPenetrationGraph = new Chart(serverPenCtx, {
+            type: 'line',
             data: {
-                labels,
-                datasets: [{
-                    data: distData,
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
+                labels: Array.from({ length: numServers + 1 }, (_, i) => `${i}`),
+                datasets: attackResults.map((attackerData, idx) => ({
+                    label: `Attacker ${idx + 1}`,
+                    data: attackerData.map((val, i) => val / (i + 1)),
+                    borderColor: `rgba(${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, ${Math.random() * 200 + 55}, 0.9)`,
+                    fill: false,
+                    borderWidth: 2,
+                })),
             },
             options: {
                 scales: {
-                    y: { grid: { display: false }, ticks: { color: '#999' } },
-                    x: { grid: { display: false }, ticks: { color: '#999' } }
+                    y: { min: -1, max: 1 },
+                    x: { grid: { display: false } },
                 },
-                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }
-            }
+            },
         });
     }
 }
 
-document.getElementById('configForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const numServers = parseInt(document.getElementById('serverCount').value);
-    const numAttackers = parseInt(document.getElementById('hackerCount').value);
-    const successProb = parseFloat(document.getElementById('penetrationProb').value);
-    drawPenetrationGraph(numServers, numAttackers, successProb);
-});
+function drawAttackerDistribution(penetrationDistribution, numServers) {
+    const labels = Array.from({ length: numServers +Ecco il codice completo richiesto, organizzato per l'HTML, il CSS e il JavaScript.
 
-drawPenetrationGraph(10, 5, 0.5);
