@@ -21,7 +21,7 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
                 savedScores.push(totalToPush); // Salva il valore finale di penetrazione
             }
         }
-        finalPenetrations[attacker] = penetrations;
+        finalPenetrations[attacker] = isRelative ? penetrations / numServers : penetrations;
     }
 
     // Distribuzione delle penetrazioni finali
@@ -30,8 +30,10 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
         return acc;
     }, {});
 
-    // Calcolo della media e della varianza per frequenze assolute o relative
+    // Calcolo della media sui valori finali (assoluti o relativi a seconda del caso)
     const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
+
+    // Calcolo della varianza usando i valori corretti (relativi o assoluti)
     let variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
 
     return { attackResults, penetrationDistribution, mean, variance, savedScores };
