@@ -10,6 +10,31 @@
 <body>
     <h1>Penetration Simulation</h1>
 
+    <!-- Sezione esplicativa della Welford recursion -->
+    <div id="welfordExplanation">
+        <h2>Welford Recursion</h2>
+        <p>
+            La Welford recursion è un algoritmo numerico efficiente per calcolare la media e la varianza di un insieme di dati, evitando problemi di perdita di precisione che possono insorgere con calcoli iterativi convenzionali. Questo metodo è particolarmente utile quando stai aggiornando la media e la varianza durante l'aggiunta di nuovi dati, senza dover memorizzare l'intero dataset.
+        </p>
+        <h3>Welford recursion per la media e la varianza:</h3>
+        <p>Siano <em>x₁, x₂, ..., xₙ</em> i dati, con <em>μₙ</em> la media e <em>σₙ²</em> la varianza al passo <em>n</em>.</p>
+        <h4>Inizializzazione:</h4>
+        <ul>
+            <li>μ₀ = 0 (media iniziale)</li>
+            <li>M₂ = 0 (un valore che ci serve per aggiornare la varianza, inizialmente 0)</li>
+            <li>n = 0 (contatore degli elementi)</li>
+        </ul>
+        <h4>Passo di aggiornamento (per ogni nuovo valore <em>x</em>):</h4>
+        <ul>
+            <li>Incrementa il contatore: <em>n ← n + 1</em></li>
+            <li>Aggiorna la media: <em>μₙ = μₙ₋₁ + (xₙ - μₙ₋₁) / n</em></li>
+            <li>Aggiorna M₂: <em>M₂ = M₂ + (xₙ - μₙ₋₁)(xₙ - μₙ)</em></li>
+        </ul>
+        <h4>Calcolo finale della varianza (dopo aver inserito tutti i dati):</h4>
+        <p><em>σ² = M₂ / n</em></p>
+    </div>
+
+    <!-- Configurazione simulazione -->
     <form id="configForm">
         <div>
             <label for="serverCount">Servers (n):</label>
@@ -25,11 +50,13 @@
         </div>
     </form>
 
+    <!-- Bottoni per la simulazione -->
     <div class="button-container">
         <button id="absoluteFreqBtn">Run Absolute Frequency</button>
         <button id="relativeFreqBtn">Run Relative Frequency</button>
     </div>
 
+    <!-- Grafici -->
     <div class="chart-container">
         <canvas id="serverPenetrationChart"></canvas>
     </div>
@@ -37,15 +64,13 @@
         <canvas id="attackerDistributionChart"></canvas>
     </div>
 
+    <!-- Statistiche -->
     <div id="statistics">
         <p id="mean">Mean: N/A</p>
         <p id="variance">Variance: N/A</p>
     </div>
 
-    <script src="script.js"></script>
-</body>
-</html>
-
+    <!-- Codice JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
