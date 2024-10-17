@@ -8,31 +8,65 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- Sezione esplicativa della Welford recursion -->
+    <!-- Welford Recursion Section -->
     <div id="welfordExplanation">
         <h2>Welford Recursion</h2>
         <p>
-            La Welford recursion è un algoritmo numerico efficiente per calcolare la media e la varianza di un insieme di dati, evitando problemi di perdita di precisione che possono insorgere con calcoli iterativi convenzionali. Questo metodo è particolarmente utile quando stai aggiornando la media e la varianza durante l'aggiunta di nuovi dati, senza dover memorizzare l'intero dataset.
+            Welford recursion is an efficient numerical algorithm for calculating the mean and variance of a dataset, avoiding precision loss issues that can arise with conventional iterative calculations. This method is particularly useful when updating the mean and variance as new data points are added, without needing to store the entire dataset.
         </p>
-        <h3>Welford recursion per la media e la varianza:</h3>
-        <p>Siano <em>x₁, x₂, ..., xₙ</em> i dati, con <em>μₙ</em> la media e <em>σₙ²</em> la varianza al passo <em>n</em>.</p>
-        <h4>Inizializzazione:</h4>
+        <h3>Welford recursion for mean and variance:</h3>
+        <p>Let <em>x₁, x₂, ..., xₙ</em> be the data, with <em>μₙ</em> as the mean and <em>σₙ²</em> as the variance at step <em>n</em>.</p>
+        <h4>Initialization:</h4>
         <ul>
-            <li>μ₀ = 0 (media iniziale)</li>
-            <li>M₂ = 0 (un valore che ci serve per aggiornare la varianza, inizialmente 0)</li>
-            <li>n = 0 (contatore degli elementi)</li>
+            <li>μ₀ = 0 (initial mean)</li>
+            <li>M₂ = 0 (a value we use to update variance, initially 0)</li>
+            <li>n = 0 (number of elements)</li>
         </ul>
-        <h4>Passo di aggiornamento (per ogni nuovo valore <em>x</em>):</h4>
+        <h4>Update step (for each new value <em>x</em>):</h4>
         <ul>
-            <li>Incrementa il contatore: <em>n ← n + 1</em></li>
-            <li>Aggiorna la media: <em>μₙ = μₙ₋₁ + (xₙ - μₙ₋₁) / n</em></li>
-            <li>Aggiorna M₂: <em>M₂ = M₂ + (xₙ - μₙ₋₁)(xₙ - μₙ)</em></li>
+            <li>Increment counter: <em>n ← n + 1</em></li>
+            <li>Update mean: <em>μₙ = μₙ₋₁ + (xₙ - μₙ₋₁) / n</em></li>
+            <li>Update M₂: <em>M₂ = M₂ + (xₙ - μₙ₋₁)(xₙ - μₙ)</em></li>
         </ul>
-        <h4>Calcolo finale della varianza (dopo aver inserito tutti i dati):</h4>
+        <h4>Final variance calculation (after all data points are added):</h4>
         <p><em>σ² = M₂ / n</em></p>
     </div>
+
+    <!-- Research Section -->
+    <div id="research">
+        <h2>Research on Mean and Variance Behavior</h2>
+        <p>
+            Below are notes on the behavior of mean and variance with respect to time, comparing different cases (relative/absolute frequency and Bernoulli/random walk):
+        </p>
+        <h3>1. Absolute Frequency and Bernoulli Process</h3>
+        <p>
+            - <strong>Mean</strong>: In a Bernoulli simulation (e.g., coin tosses), the mean represents the proportion of successes. Over time, the mean tends to stabilize around the probability of success \(p\), especially with a large number of trials.<br>
+            - <strong>Variance</strong>: Initially, variance may be high, but as trials increase, it stabilizes since the observations converge toward the expected value.
+        </p>
+        <h3>2. Relative Frequency and Bernoulli Process</h3>
+        <p>
+            - <strong>Mean</strong>: In relative frequency, the mean also converges to \(p\), but faster than with absolute numbers due to normalization.<br>
+            - <strong>Variance</strong>: The variance in relative frequency decreases more rapidly compared to absolute frequency, as the ratio stabilizes with time.
+        </p>
+        <h3>3. Absolute Frequency and Random Walk</h3>
+        <p>
+            - <strong>Mean</strong>: In a symmetric random walk, the mean stays around zero, as there’s an equal probability of moving in either direction.<br>
+            - <strong>Variance</strong>: Variance grows linearly with time since each step contributes to the increasing distance from the origin.
+        </p>
+        <h3>4. Relative Frequency and Random Walk</h3>
+        <p>
+            - <strong>Mean</strong>: The mean remains around zero, but values are compressed due to normalization. Over time, the values appear smaller as the total number of steps increases.<br>
+            - <strong>Variance</strong>: Variance in relative frequency grows more slowly and remains more stable compared to absolute frequency.
+        </p>
+        <h4>Main Differences Between Absolute and Relative Frequencies:</h4>
+        <p>
+            - <strong>Absolute Distribution</strong>: Fluctuates more, especially in random walks, with larger variance over time.<br>
+            - <strong>Relative Distribution</strong>: Stabilizes quicker due to normalization and generally has lower variance.
+        </p>
+    </div>
+
     <h1>Penetration Simulation</h1>
-    <!-- Configurazione simulazione -->
+    <!-- Simulation Configuration -->
     <form id="configForm">
         <div>
             <label for="serverCount">Servers (n):</label>
@@ -48,13 +82,13 @@
         </div>
     </form>
 
-    <!-- Bottoni per la simulazione -->
+    <!-- Simulation Buttons -->
     <div class="button-container">
         <button id="absoluteFreqBtn">Run Absolute Frequency</button>
         <button id="relativeFreqBtn">Run Relative Frequency</button>
     </div>
 
-    <!-- Grafici -->
+    <!-- Charts -->
     <div class="chart-container">
         <canvas id="serverPenetrationChart"></canvas>
     </div>
@@ -62,13 +96,13 @@
         <canvas id="attackerDistributionChart"></canvas>
     </div>
 
-    <!-- Statistiche -->
+    <!-- Statistics -->
     <div id="statistics">
         <p id="mean">Mean: N/A</p>
         <p id="variance">Variance: N/A</p>
     </div>
 
-    <!-- Codice JavaScript -->
+    <!-- JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
