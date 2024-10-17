@@ -85,9 +85,14 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
 }
 
 function drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative, savedScores) {
-    // Trova il valore minimo e massimo dei punteggi finali salvati (inclusi valori negativi)
-    const minXValue = Math.min(...savedScores);
-    const maxXValue = Math.max(...savedScores);
+    // Se è relativa, i valori devono essere normalizzati tra -1 e 1
+    let minXValue = Math.min(...savedScores);
+    let maxXValue = Math.max(...savedScores);
+
+    if (isRelative) {
+        minXValue = -1;
+        maxXValue = 1;
+    }
 
     // Genera le etichette per l'asse X in base ai punteggi minimi e massimi
     const labels = Array.from({ length: maxXValue - minXValue + 1 }, (_, i) => `${minXValue + i}`);
@@ -160,7 +165,4 @@ document.getElementById('relativeFreqBtn').addEventListener('click', function() 
 
 // Chiamata iniziale con frequenza assoluta
 drawPenetrationGraph(100, 50, 0.5);
-
-
-
 
