@@ -12,10 +12,13 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
         for (let server = 1; server <= numServers; server++) {
             // Simula salti di -1 o +1 con probabilità p (random walk)
             penetrations += Math.random() < successProb ? 1 : -1;
-            attackResults[attacker].push(penetrations);
+
+            // Frequenza relativa o assoluta
+            const totalToPush = isRelative ? penetrations / (server + 1) : penetrations;
+            attackResults[attacker].push(totalToPush);
 
             if (server === numServers - 1) {
-                savedScores.push(penetrations); // Salva il valore finale di penetrazione
+                savedScores.push(totalToPush); // Salva il valore finale di penetrazione
             }
         }
         finalPenetrations[attacker] = penetrations;
@@ -27,7 +30,7 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
         return acc;
     }, {});
 
-    // Calcolo della media e della varianza per frequenze assolute
+    // Calcolo della media e della varianza per frequenze assolute o relative
     const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
     let variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
 
