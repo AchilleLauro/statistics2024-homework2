@@ -7,14 +7,32 @@ body {
     margin: auto;
 }
 
-h1 {
-    text-align: center;
+h1, h2, h3, h4 {
     color: #4CAF50;
+}
+
+h2 {
+    font-size: 1.8rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin-top: 20px;
+}
+
+h4 {
+    font-size: 1.3rem;
+    margin-top: 15px;
 }
 
 .chart-container {
     width: 100%;
     margin-bottom: 30px;
+}
+
+p, ul {
+    line-height: 1.6;
+    margin-bottom: 15px;
 }
 
 form {
@@ -64,6 +82,18 @@ button:hover {
     text-align: center;
     font-size: 1.2rem;
     color: #4CAF50;
+}
+
+#mean, #variance {
+    margin: 10px 0;
+}
+
+#research {
+    background-color: #222;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 #mean, #variance {
