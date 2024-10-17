@@ -85,11 +85,18 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
 }
 
 function drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative, savedScores) {
-    const labels = Array.from({ length: numServers + 1 }, (_, i) => `${i}`);
+    // Trova il valore minimo e massimo dei punteggi finali salvati (inclusi valori negativi)
+    const minXValue = Math.min(...savedScores);
+    const maxXValue = Math.max(...savedScores);
+
+    // Genera le etichette per l'asse X in base ai punteggi minimi e massimi
+    const labels = Array.from({ length: maxXValue - minXValue + 1 }, (_, i) => `${minXValue + i}`);
+
+    // Mappa i valori della distribuzione ai corrispondenti label (compresi quelli negativi)
     const distData = labels.map(label => penetrationDistribution[label] || 0);
 
-    // Modifica della scala dell'asse y per la frequenza relativa o assoluta
-    const maxYValue = isRelative ? 1 : Math.max(...distData);
+    // Calcola il valore massimo dell'asse Y per l'istogramma
+    const maxYValue = Math.max(...distData);
 
     if (attackerDistGraph) {
         attackerDistGraph.data.labels = labels;
@@ -97,6 +104,7 @@ function drawAttackerDistribution(penetrationDistribution, numServers, mean, var
         attackerDistGraph.options.scales.y.max = maxYValue;
         attackerDistGraph.update();
     } else {
+        // Crea il grafico istogramma se non esiste ancora
         attackerDistGraph = new Chart(attackerDistCtx, {
             type: 'bar',
             data: {
@@ -110,10 +118,21 @@ function drawAttackerDistribution(penetrationDistribution, numServers, mean, var
             },
             options: {
                 scales: {
-                    y: { min: 0, max: maxYValue, grid: { display: false }, ticks: { color: '#999' } },
-                    x: { grid: { display: false }, ticks: { color: '#999' } }
+                    y: {
+                        min: 0, // L'asse Y parte da 0
+                        max: maxYValue, // Calcola il massimo dinamicamente
+                        grid: { display: false }, 
+                        ticks: { color: '#999' }
+                    },
+                    x: {
+                        grid: { display: false }, 
+                        ticks: { color: '#999' }
+                    }
                 },
-                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }
+                plugins: { 
+                    legend: { display: false }, 
+                    tooltip: { mode: 'index', intersect: false } 
+                }
             }
         });
     }
