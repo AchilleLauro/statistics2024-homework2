@@ -9,7 +9,6 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
-    <!-- Welford Recursion Section -->
     <div id="welfordExplanation">
         <h2>Welford Recursion</h2>
         <p>
@@ -29,12 +28,12 @@
             <li>Update mean: <em>μₙ = μₙ₋₁ + (xₙ - μₙ₋₁) / n</em></li>
             <li>Update M₂: <em>M₂ = M₂ + (xₙ - μₙ₋₁)(xₙ - μₙ)</em></li>
         </ul>
-        <h4>Final variance calculation (after all data points are added):</h4>
+        <h4>Final variance calculation:</h4>
         <p><em>σ² = M₂ / n</em></p>
     </div>
 
     <h1>Penetration Simulation</h1>
-    <!-- Simulation Configuration -->
+
     <form id="configForm">
         <div>
             <label for="serverCount">Servers (n):</label>
@@ -50,13 +49,11 @@
         </div>
     </form>
 
-    <!-- Simulation Buttons -->
     <div class="button-container">
         <button id="absoluteFreqBtn">Run Absolute Frequency</button>
         <button id="relativeFreqBtn">Run Relative Frequency</button>
     </div>
 
-    <!-- Charts -->
     <div class="chart-container">
         <canvas id="serverPenetrationChart"></canvas>
     </div>
@@ -64,13 +61,11 @@
         <canvas id="attackerDistributionChart"></canvas>
     </div>
 
-    <!-- Statistics -->
     <div id="statistics">
         <p id="mean">Mean: N/A</p>
         <p id="variance">Variance: N/A</p>
     </div>
 
-    <!-- Research Section - Positioned below the charts -->
     <div id="research">
         <h2>Research on Mean and Variance Behavior</h2>
         <p>
@@ -103,8 +98,8 @@
         </p>
     </div>
 
-    <!-- JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
+
 
