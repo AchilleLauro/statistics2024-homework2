@@ -85,20 +85,26 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
 }
 
 function drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative, savedScores) {
-    // Se è relativa, i valori devono essere normalizzati tra -1 e 1
+    // Calcola min e max dei punteggi salvati
     let minXValue = Math.min(...savedScores);
     let maxXValue = Math.max(...savedScores);
 
+    // Se è relativa, i valori devono essere normalizzati tra -1 e 1, ma in base ai dati reali
     if (isRelative) {
-        minXValue = -1;
-        maxXValue = 1;
+        minXValue = Math.floor(minXValue * 10) / 10; // Arrotonda al minimo
+        maxXValue = Math.ceil(maxXValue * 10) / 10;  // Arrotonda al massimo
     }
 
-    // Genera le etichette per l'asse X in base ai punteggi minimi e massimi
-    const labels = Array.from({ length: maxXValue - minXValue + 1 }, (_, i) => `${minXValue + i}`);
+    // Imposta una dimensione di passo per le etichette (stepSize) per gestire intervalli più piccoli
+    const stepSize = isRelative ? 0.1 : 1;  // Usa step di 0.1 se è relativo
+    const labels = Array.from({ length: Math.ceil((maxXValue - minXValue) / stepSize) + 1 }, (_, i) => (minXValue + i * stepSize).toFixed(1));
 
     // Mappa i valori della distribuzione ai corrispondenti label (compresi quelli negativi)
-    const distData = labels.map(label => penetrationDistribution[label] || 0);
+    const distData = labels.map(label => {
+        // Converti label a float per confronto
+        const floatLabel = parseFloat(label);
+        return savedScores.filter(score => Math.abs(score - floatLabel) < stepSize / 2).length;
+    });
 
     // Calcola il valore massimo dell'asse Y per l'istogramma
     const maxYValue = Math.max(...distData);
