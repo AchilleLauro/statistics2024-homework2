@@ -10,30 +10,23 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
     for (let attacker = 0; attacker < numAttackers; attacker++) {
         let penetrations = 0;
         for (let server = 1; server <= numServers; server++) {
-            // Simula salti di -1 o +1 con probabilità p (random walk)
             penetrations += Math.random() < successProb ? 1 : -1;
-
-            // Frequenza relativa: Normalizza tra -1 e 1 in base al numero totale di server
             const totalToPush = isRelative ? penetrations / numServers : penetrations;
             attackResults[attacker].push(totalToPush);
 
             if (server === numServers - 1) {
-                savedScores.push(totalToPush); // Salva il valore finale di penetrazione
+                savedScores.push(totalToPush);
             }
         }
         finalPenetrations[attacker] = isRelative ? penetrations / numServers : penetrations;
     }
 
-    // Distribuzione delle penetrazioni finali
     const penetrationDistribution = finalPenetrations.reduce((acc, numPenetrations) => {
         acc[numPenetrations] = (acc[numPenetrations] || 0) + 1;
         return acc;
     }, {});
 
-    // Calcolo della media sui valori finali (assoluti o relativi a seconda del caso)
     const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
-
-    // Calcolo della varianza usando i valori corretti (relativi o assoluti)
     let variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
 
     return { attackResults, penetrationDistribution, mean, variance, savedScores };
@@ -51,15 +44,14 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
         borderWidth: 2
     }));
 
-    // Impostiamo l'asse Y in base alla selezione di frequenza relativa o assoluta
     const yMin = isRelative ? -1 : -numServers;
     const yMax = isRelative ? 1 : numServers;
 
     if (serverPenetrationGraph) {
         serverPenetrationGraph.data.labels = ['Start', ...labels];
         serverPenetrationGraph.data.datasets = attackerDatasets;
-        serverPenetrationGraph.options.scales.y.min = yMin;  // Imposta min correttamente
-        serverPenetrationGraph.options.scales.y.max = yMax;   // Imposta max correttamente
+        serverPenetrationGraph.options.scales.y.min = yMin;
+        serverPenetrationGraph.options.scales.y.max = yMax;
         serverPenetrationGraph.update();
     } else {
         serverPenetrationGraph = new Chart(serverPenCtx, {
@@ -71,8 +63,8 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
             options: {
                 scales: {
                     y: { 
-                        min: yMin,  // Applica il min corretto
-                        max: yMax,  // Applica il max corretto
+                        min: yMin,
+                        max: yMax,
                         grid: { display: false }, 
                         ticks: { color: '#999' } 
                     },
@@ -87,28 +79,22 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
 }
 
 function drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative, savedScores) {
-    // Calcola min e max dei punteggi salvati
     let minXValue = Math.min(...savedScores);
     let maxXValue = Math.max(...savedScores);
 
-    // Se è relativa, i valori devono essere normalizzati tra -1 e 1, ma in base ai dati reali
     if (isRelative) {
-        minXValue = Math.floor(minXValue * 10) / 10; // Arrotonda al minimo
-        maxXValue = Math.ceil(maxXValue * 10) / 10;  // Arrotonda al massimo
+        minXValue = Math.floor(minXValue * 10) / 10;
+        maxXValue = Math.ceil(maxXValue * 10) / 10;
     }
 
-    // Imposta una dimensione di passo per le etichette (stepSize) per gestire intervalli più piccoli
-    const stepSize = isRelative ? 0.1 : 1;  // Usa step di 0.1 se è relativo
+    const stepSize = isRelative ? 0.1 : 1;
     const labels = Array.from({ length: Math.ceil((maxXValue - minXValue) / stepSize) + 1 }, (_, i) => (minXValue + i * stepSize).toFixed(1));
 
-    // Mappa i valori della distribuzione ai corrispondenti label (compresi quelli negativi)
     const distData = labels.map(label => {
-        // Converti label a float per confronto
         const floatLabel = parseFloat(label);
         return savedScores.filter(score => Math.abs(score - floatLabel) < stepSize / 2).length;
     });
 
-    // Calcola il valore massimo dell'asse Y per l'istogramma
     const maxYValue = Math.max(...distData);
 
     if (attackerDistGraph) {
@@ -117,7 +103,6 @@ function drawAttackerDistribution(penetrationDistribution, numServers, mean, var
         attackerDistGraph.options.scales.y.max = maxYValue;
         attackerDistGraph.update();
     } else {
-        // Crea il grafico istogramma se non esiste ancora
         attackerDistGraph = new Chart(attackerDistCtx, {
             type: 'bar',
             data: {
@@ -132,8 +117,8 @@ function drawAttackerDistribution(penetrationDistribution, numServers, mean, var
             options: {
                 scales: {
                     y: {
-                        min: 0, // L'asse Y parte da 0
-                        max: maxYValue, // Calcola il massimo dinamicamente
+                        min: 0,
+                        max: maxYValue,
                         grid: { display: false }, 
                         ticks: { color: '#999' }
                     },
@@ -150,27 +135,22 @@ function drawAttackerDistribution(penetrationDistribution, numServers, mean, var
         });
     }
 
-    // Visualizzazione della media e della varianza
     document.getElementById('mean').textContent = `Mean: ${mean.toFixed(4)}`;
     document.getElementById('variance').textContent = `Variance: ${variance.toFixed(4)}`;
 }
 
-// Event listener per il bottone di frequenza assoluta
 document.getElementById('absoluteFreqBtn').addEventListener('click', function() {
     const numServers = parseInt(document.getElementById('serverCount').value);
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
     const successProb = parseFloat(document.getElementById('penetrationProb').value);
-    drawPenetrationGraph(numServers, numAttackers, successProb, false); // Chiamata con frequenza assoluta
+    drawPenetrationGraph(numServers, numAttackers, successProb, false);
 });
 
-// Event listener per il bottone di frequenza relativa
 document.getElementById('relativeFreqBtn').addEventListener('click', function() {
     const numServers = parseInt(document.getElementById('serverCount').value);
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
     const successProb = parseFloat(document.getElementById('penetrationProb').value);
-    drawPenetrationGraph(numServers, numAttackers, successProb, true); // Chiamata con frequenza relativa
+    drawPenetrationGraph(numServers, numAttackers, successProb, true);
 });
 
-// Chiamata iniziale con frequenza assoluta
 drawPenetrationGraph(100, 50, 0.5);
-
