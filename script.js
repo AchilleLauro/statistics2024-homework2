@@ -34,6 +34,9 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
     const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
     let variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
 
+    // Debug: Verifica i valori della varianza e del calcolo
+    console.log('Mean:', mean, 'Variance:', variance);
+
     if (isRelative) {
         // Se è relativa, normalizza le frequenze e ricalcola media e varianza
         const total = numAttackers;
@@ -144,6 +147,5 @@ document.getElementById('relativeFreqBtn').addEventListener('click', function() 
 
 // Chiamata iniziale con frequenza assoluta
 drawPenetrationGraph(100, 50, 0.5);
-
 
 
