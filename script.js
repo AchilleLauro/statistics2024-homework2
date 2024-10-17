@@ -13,8 +13,8 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
             // Simula salti di -1 o +1 con probabilità p (random walk)
             penetrations += Math.random() < successProb ? 1 : -1;
 
-            // Frequenza relativa o assoluta
-            const totalToPush = isRelative ? penetrations / (server + 1) : penetrations;
+            // Frequenza relativa: Normalizza tra -1 e 1 in base al numero totale di server
+            const totalToPush = isRelative ? penetrations / numServers : penetrations;
             attackResults[attacker].push(totalToPush);
 
             if (server === numServers - 1) {
@@ -64,8 +64,8 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
     if (serverPenetrationGraph) {
         serverPenetrationGraph.data.labels = ['Start', ...labels];
         serverPenetrationGraph.data.datasets = attackerDatasets;
-        serverPenetrationGraph.options.scales.y.min = -numServers;
-        serverPenetrationGraph.options.scales.y.max = numServers;
+        serverPenetrationGraph.options.scales.y.min = -1;  // Imposta min a -1 per la frequenza relativa
+        serverPenetrationGraph.options.scales.y.max = 1;   // Imposta max a 1 per la frequenza relativa
         serverPenetrationGraph.update();
     } else {
         serverPenetrationGraph = new Chart(serverPenCtx, {
@@ -76,7 +76,7 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
             },
             options: {
                 scales: {
-                    y: { min: -numServers, max: numServers, grid: { display: false }, ticks: { color: '#999' } },
+                    y: { min: isRelative ? -1 : -numServers, max: isRelative ? 1 : numServers, grid: { display: false }, ticks: { color: '#999' } },
                     x: { grid: { display: false }, ticks: { color: '#999' } }
                 },
                 plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }
@@ -144,5 +144,6 @@ document.getElementById('relativeFreqBtn').addEventListener('click', function() 
 
 // Chiamata iniziale con frequenza assoluta
 drawPenetrationGraph(100, 50, 0.5);
+
 
 
