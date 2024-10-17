@@ -34,21 +34,6 @@ function createPenetrationData(numServers, numAttackers, successProb, isRelative
     const mean = finalPenetrations.reduce((sum, x) => sum + x, 0) / numAttackers;
     let variance = finalPenetrations.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / numAttackers;
 
-    // Debug: Verifica i valori della varianza e del calcolo
-    console.log('Mean:', mean, 'Variance:', variance);
-
-    if (isRelative) {
-        // Se è relativa, normalizza le frequenze e ricalcola media e varianza
-        const total = numAttackers;
-        for (let key in penetrationDistribution) {
-            penetrationDistribution[key] = (penetrationDistribution[key] / total).toFixed(4);
-        }
-
-        // Normalizza la media e ricalcola la varianza per frequenze relative
-        const relativeMean = mean / numAttackers;
-        variance = finalPenetrations.reduce((sum, x) => sum + Math.pow((x / numAttackers) - relativeMean, 2), 0) / numAttackers;
-    }
-
     return { attackResults, penetrationDistribution, mean, variance, savedScores };
 }
 
@@ -64,11 +49,15 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
         borderWidth: 2
     }));
 
+    // Impostiamo l'asse Y in base alla selezione di frequenza relativa o assoluta
+    const yMin = isRelative ? -1 : -numServers;
+    const yMax = isRelative ? 1 : numServers;
+
     if (serverPenetrationGraph) {
         serverPenetrationGraph.data.labels = ['Start', ...labels];
         serverPenetrationGraph.data.datasets = attackerDatasets;
-        serverPenetrationGraph.options.scales.y.min = isRelative ? -1 : -numServers;  // Imposta min a -1 solo per la frequenza relativa
-        serverPenetrationGraph.options.scales.y.max = isRelative ? 1 : numServers;   // Imposta max a 1 solo per la frequenza relativa
+        serverPenetrationGraph.options.scales.y.min = yMin;  // Imposta min correttamente
+        serverPenetrationGraph.options.scales.y.max = yMax;   // Imposta max correttamente
         serverPenetrationGraph.update();
     } else {
         serverPenetrationGraph = new Chart(serverPenCtx, {
@@ -80,8 +69,8 @@ function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative 
             options: {
                 scales: {
                     y: { 
-                        min: isRelative ? -1 : -numServers, 
-                        max: isRelative ? 1 : numServers, 
+                        min: yMin,  // Applica il min corretto
+                        max: yMax,  // Applica il max corretto
                         grid: { display: false }, 
                         ticks: { color: '#999' } 
                     },
@@ -152,6 +141,7 @@ document.getElementById('relativeFreqBtn').addEventListener('click', function() 
 
 // Chiamata iniziale con frequenza assoluta
 drawPenetrationGraph(100, 50, 0.5);
+
 
 
 
