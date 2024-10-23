@@ -2,26 +2,23 @@ const serverPenCtx = document.getElementById('serverPenetrationChart').getContex
 const attackerDistCtx = document.getElementById('attackerDistributionChart').getContext('2d');
 let serverPenetrationGraph, attackerDistGraph;
 
-function createPenetrationData(numAttackers, lambda, totalTime, timeSteps, isRelative = false) {
-    const dt = totalTime / timeSteps;  // Infinitesimal time interval
+function createPenetrationData(numServers, numAttackers, successProb, isRelative = false) {
     const attackResults = Array.from({ length: numAttackers }, () => [0]);
     const finalPenetrations = Array(numAttackers).fill(0);
     const savedScores = [];
 
     for (let attacker = 0; attacker < numAttackers; attacker++) {
         let penetrations = 0;
-        for (let step = 1; step <= timeSteps; step++) {
-            // Probabilità di attacco in questo piccolo intervallo dt
-            const attackSuccess = Math.random() < lambda * dt;
-            penetrations += attackSuccess ? 1 : 0;
-            const totalToPush = isRelative ? penetrations / step : penetrations;
+        for (let server = 1; server <= numServers; server++) {
+            penetrations += Math.random() < successProb ? 1 : -1;
+            const totalToPush = isRelative ? penetrations / numServers : penetrations;
             attackResults[attacker].push(totalToPush);
 
-            if (step === timeSteps) {
+            if (server === numServers - 1) {
                 savedScores.push(totalToPush);
             }
         }
-        finalPenetrations[attacker] = isRelative ? penetrations / timeSteps : penetrations;
+        finalPenetrations[attacker] = isRelative ? penetrations / numServers : penetrations;
     }
 
     const penetrationDistribution = finalPenetrations.reduce((acc, numPenetrations) => {
@@ -35,9 +32,9 @@ function createPenetrationData(numAttackers, lambda, totalTime, timeSteps, isRel
     return { attackResults, penetrationDistribution, mean, variance, savedScores };
 }
 
-function drawPenetrationGraph(numAttackers, lambda, totalTime, timeSteps, isRelative = false) {
-    const { attackResults, penetrationDistribution, mean, variance, savedScores } = createPenetrationData(numAttackers, lambda, totalTime, timeSteps, isRelative);
-    const labels = Array.from({ length: timeSteps }, (_, i) => `${i + 1}`);
+function drawPenetrationGraph(numServers, numAttackers, successProb, isRelative = false) {
+    const { attackResults, penetrationDistribution, mean, variance, savedScores } = createPenetrationData(numServers, numAttackers, successProb, isRelative);
+    const labels = Array.from({ length: numServers }, (_, i) => `${i + 1}`);
     const attackerDatasets = attackResults.map((attackerData, idx) => ({
         label: `Attacker ${idx + 1}`,
         data: attackerData,
@@ -47,8 +44,8 @@ function drawPenetrationGraph(numAttackers, lambda, totalTime, timeSteps, isRela
         borderWidth: 2
     }));
 
-    const yMin = isRelative ? 0 : 0;
-    const yMax = isRelative ? 1 : timeSteps;
+    const yMin = isRelative ? -1 : -numServers;
+    const yMax = isRelative ? 1 : numServers;
 
     if (serverPenetrationGraph) {
         serverPenetrationGraph.data.labels = ['Start', ...labels];
@@ -78,10 +75,10 @@ function drawPenetrationGraph(numAttackers, lambda, totalTime, timeSteps, isRela
         });
     }
 
-    drawAttackerDistribution(penetrationDistribution, timeSteps, mean, variance, isRelative, savedScores);
+    drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative, savedScores);
 }
 
-function drawAttackerDistribution(penetrationDistribution, timeSteps, mean, variance, isRelative, savedScores) {
+function drawAttackerDistribution(penetrationDistribution, numServers, mean, variance, isRelative, savedScores) {
     let minXValue = Math.min(...savedScores);
     let maxXValue = Math.max(...savedScores);
 
@@ -143,19 +140,17 @@ function drawAttackerDistribution(penetrationDistribution, timeSteps, mean, vari
 }
 
 document.getElementById('absoluteFreqBtn').addEventListener('click', function() {
+    const numServers = parseInt(document.getElementById('serverCount').value);
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
-    const lambda = parseFloat(document.getElementById('attackRate').value);
-    const totalTime = parseInt(document.getElementById('totalTime').value);
-    const timeSteps = parseInt(document.getElementById('timeSteps').value);
-    drawPenetrationGraph(numAttackers, lambda, totalTime, timeSteps, false);
+    const successProb = parseFloat(document.getElementById('penetrationProb').value);
+    drawPenetrationGraph(numServers, numAttackers, successProb, false);
 });
 
 document.getElementById('relativeFreqBtn').addEventListener('click', function() {
+    const numServers = parseInt(document.getElementById('serverCount').value);
     const numAttackers = parseInt(document.getElementById('hackerCount').value);
-    const lambda = parseFloat(document.getElementById('attackRate').value);
-    const totalTime = parseInt(document.getElementById('totalTime').value);
-    const timeSteps = parseInt(document.getElementById('timeSteps').value);
-    drawPenetrationGraph(numAttackers, lambda, totalTime, timeSteps, true);
+    const successProb = parseFloat(document.getElementById('penetrationProb').value);
+    drawPenetrationGraph(numServers, numAttackers, successProb, true);
 });
 
-drawPenetrationGraph(50, 0.5, 100, 1000);
+drawPenetrationGraph(100, 50, 0.5);
